@@ -26,7 +26,7 @@ passport.use(
       showDialog: true,
       clientID: clientID,
       clientSecret: clientSecret,
-      callbackURL: "https://backend-starter-steel.vercel.app/api/spotify/callback",
+      callbackURL: "https://memorify-omega.vercel.app/api/spotify/callback",
       // callbackURL: "http://localhost:3000/api/spotify/callback/",
       scope: ["user-read-private", "user-read-currently-playing", "user-read-playback-state", "user-modify-playback-state"],
     },
