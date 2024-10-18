@@ -5,10 +5,9 @@ import { ref } from "vue";
 
 const username = ref("");
 const password = ref("");
-const { createUser, loginUser, updateSession } = useUserStore();
+const { loginUser, updateSession } = useUserStore();
 
-async function register() {
-  await createUser(username.value, password.value);
+async function login() {
   await loginUser(username.value, password.value);
   void updateSession();
   void router.push({ name: "Home" });
@@ -16,8 +15,8 @@ async function register() {
 </script>
 
 <template>
-  <form class="pure-form pure-form-aligned" @submit.prevent="register">
-    <h3>Register User</h3>
+  <form class="pure-form pure-form-aligned" @submit.prevent="login">
+    <h3>Login</h3>
     <fieldset>
       <div class="pure-control-group">
         <label for="aligned-name">Username</label>
@@ -28,7 +27,7 @@ async function register() {
         <input type="password" v-model.trim="password" id="aligned-password" placeholder="Password" required />
       </div>
       <div class="pure-controls">
-        <button type="submit" class="pure-button pure-button-primary">Register</button>
+        <button type="submit" class="pure-button pure-button-primary">Submit</button>
       </div>
     </fieldset>
   </form>

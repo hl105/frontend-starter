@@ -14,8 +14,16 @@ export const useUserStore = defineStore(
       currentUsername.value = "";
     };
 
-    const loginUser = async () => {
-      window.location.href = "/api/spotify";
+    const createUser = async (username: string, password: string) => {
+      await fetchy("/api/users", "POST", {
+        body: { username, password },
+      });
+    };
+
+    const loginUser = async (username: string, password: string) => {
+      await fetchy("/api/login", "POST", {
+        body: { username, password },
+      });
     };
 
     const updateSession = async () => {
@@ -32,6 +40,14 @@ export const useUserStore = defineStore(
       resetStore();
     };
 
+    const updateUserUsername = async (username: string) => {
+      await fetchy("/api/users/username", "PATCH", { body: { username } });
+    };
+
+    const updateUserPassword = async (currentPassword: string, newPassword: string) => {
+      await fetchy("/api/users/password", "PATCH", { body: { currentPassword, newPassword } });
+    };
+
     const deleteUser = async () => {
       await fetchy("/api/users", "DELETE");
       resetStore();
@@ -40,9 +56,12 @@ export const useUserStore = defineStore(
     return {
       currentUsername,
       isLoggedIn,
+      createUser,
       loginUser,
       updateSession,
       logoutUser,
+      updateUserUsername,
+      updateUserPassword,
       deleteUser,
     };
   },

@@ -2,7 +2,7 @@
 import router from "@/router";
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
-import UpdateUserForm from "../components/Setting/UpdateUserForm.vue";
+// import UpdateUserForm from "../components/Setting/UpdateUserForm.vue";
 
 const { currentUsername } = storeToRefs(useUserStore());
 const { logoutUser, deleteUser } = useUserStore();
@@ -23,6 +23,6 @@ async function delete_() {
     <h1>Settings for {{ currentUsername }}</h1>
     <button class="pure-button pure-button-primary" @click="logout">Logout</button>
     <button class="button-error pure-button" @click="delete_">Delete User</button>
-    <UpdateUserForm />
+    <!-- <UpdateUserForm /> -->
   </main>
 </template>

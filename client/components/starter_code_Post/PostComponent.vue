@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import { useUserStore } from "@/stores/user";
 import { formatDate } from "@/utils/formatDate";
 import { storeToRefs } from "pinia";
@@ -68,4 +68,4 @@ menu {
 .base article:only-child {
   margin-left: auto;
 }
-</style>
+</style> -->

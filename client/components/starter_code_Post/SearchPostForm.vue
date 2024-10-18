@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import { ref } from "vue";
 
 const author = ref("");
@@ -22,4 +22,4 @@ form {
   padding: 1em;
   align-items: center;
 }
-</style>
+</style> -->

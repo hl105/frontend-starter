@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import { ref } from "vue";
 import { fetchy } from "../../utils/fetchy";
 import { formatDate } from "../../utils/formatDate";
@@ -79,4 +79,4 @@ menu {
   font-size: 0.9em;
   font-style: italic;
 }
-</style>
+</style> -->

@@ -20,6 +20,7 @@ export default class SessioningConcept {
   start(session: SessionDoc, user: ObjectId) {
     this.isLoggedOut(session);
     session.user = user.toString();
+    console.log(`sessioning started ${session.user}`)
   }
 
   end(session: SessionDoc) {
@@ -44,3 +45,4 @@ export default class SessioningConcept {
     }
   }
 }
+
