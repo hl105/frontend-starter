@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import { useUserStore } from "@/stores/user";
 import { ref } from "vue";
 
@@ -39,4 +39,4 @@ async function updatePassword() {
       <button type="submit" class="pure-button pure-button-primary">Update password</button>
     </fieldset>
   </form>
-</template>
+</template> -->
