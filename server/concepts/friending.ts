@@ -34,6 +34,18 @@ export default class FriendingConcept {
     });
   }
 
+  async getOutgoingRequests(user: ObjectId) {
+    return await this.requests.readMany({
+      $or: [{ from: user }],
+    });
+  }
+
+  async getIncomingRequests(user: ObjectId) {
+    return await this.requests.readMany({
+      $or: [{ to: user }],
+    });
+  }
+
   async sendRequest(from: ObjectId, to: ObjectId) {
     await this.canSendRequest(from, to);
     await this.requests.createOne({ from, to, status: "pending" });
@@ -83,7 +95,13 @@ export default class FriendingConcept {
   }
 
   private async removePendingRequest(from: ObjectId, to: ObjectId) {
-    const request = await this.requests.popOne({ from, to, status: "pending" });
+    // const request = await this.requests.popOne({ from, to, status: "pending" });
+    const request = await this.requests.popOne({
+      $or: [
+        { from, to, status: "pending" }, // from -> to
+        { from: to, to: from, status: "pending" }, // to -> from
+      ],
+    });
     if (request === null) {
       throw new FriendRequestNotFoundError(from, to);
     }

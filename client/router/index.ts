@@ -5,7 +5,10 @@ import { useUserStore } from "@/stores/user";
 import HomeView from "../views/HomeView.vue";
 import LoginView from "../views/LoginView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
-import SettingView from "../views/SettingView.vue";
+import ProfileView from "../views/ProfileView.vue";
+import CommentView from "../views/CommentView.vue";
+import ExploreView from "../views/ExploreView.vue";
+import SnapshotView from "../views/SnapshotView.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -16,9 +19,9 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: "/setting",
-      name: "Settings",
-      component: SettingView,
+      path: "/profile",
+      name: "Profile",
+      component: ProfileView,
       meta: { requiresAuth: true },
     },
     {
@@ -29,9 +32,27 @@ const router = createRouter({
       beforeEnter: (to, from) => {
         const { isLoggedIn } = storeToRefs(useUserStore());
         if (isLoggedIn.value) {
-          return { name: "Settings" };
+          return { name: "Profile" };
         }
       },
+    },
+    {
+      path: "/create",
+      name: "create",
+      component: CommentView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/explore",
+      name: "Explore",
+      component: ExploreView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/snapshots",
+      name: "Snapshots",
+      component: SnapshotView,
+      meta: { requiresAuth: true },
     },
     {
       path: "/:catchAll(.*)",

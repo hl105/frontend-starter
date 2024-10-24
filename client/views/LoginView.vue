@@ -4,7 +4,14 @@ import LoginForm from "@/components/Login/LoginForm.vue";
 
 <template>
   <main class="column">
-    <h1>Please Log In!</h1>
+    <h1>Welcome to Memorify 🎧</h1>
     <LoginForm />
   </main>
 </template>
+
+<style scoped>
+h1 {
+  text-align: center;
+  font-size: 1.5em;
+}
+</style>

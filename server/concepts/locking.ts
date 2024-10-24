@@ -30,10 +30,12 @@ export default class LockingConcept {
 
   async getLocks() {
     // Returns all locks
+    this.removeExpiredLocks()
     return await this.locks.readMany({}, { sort: { _id: -1 } });
   }
 
   async getByLocker(locker: ObjectId){
+    this.removeExpiredLocks()
     return await this.locks.readMany({ locker });
   }
 
@@ -60,11 +62,12 @@ export default class LockingConcept {
       const currentDate = new Date();
 
       const expiredLocksQuery = {
-        to: { $lte: currentDate },
+        $expr: {
+          $lte: [{ $toDate: "$to" }, currentDate],
+        },
       };
-
       const deleteResult = await this.locks.deleteMany(expiredLocksQuery);
-
+      console.log("delete", deleteResult.deletedCount, "locks")
       return deleteResult.deletedCount || 0;
     } catch (error) {
       console.error("Error removing expired locks:", error);

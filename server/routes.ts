@@ -1,15 +1,18 @@
 import { ObjectId } from "mongodb";
 
+import dotenv from "dotenv";
 import { NextFunction, Request, Response } from "express";
+import { z } from "zod";
 import { Authing, Covering, Friending, Locking, Posting, Sessioning, Snapshoting } from "./app";
 import { SessionDoc } from "./concepts/sessioning";
 import { Router, getExpressRouter } from "./framework/router";
 import Responses from "./responses";
 import passport from "./spotifyStrategy";
-import dotenv from "dotenv";
-import { z } from "zod";
 
 dotenv.config();
+
+const frontendUrl = process.env.FRONTEND_URL;
+console.log("frontend url:", frontendUrl);
 
 /**
  * Web server routes for the app. Implements synchronizations between concepts.
@@ -43,7 +46,6 @@ class Routes {
         }
         Sessioning.start(req.session, user._id);
         req.session.save(() => {
-          const frontendUrl = process.env.FRONTEND_URL
           return res.redirect(`${frontendUrl}/?success=Authentication successful`);
         });
       });
@@ -62,9 +64,17 @@ class Routes {
   }
 
   @Router.get("/users/:username")
-  @Router.validate(z.object({ username: z.string().min(1) }))
   async getUser(username: string) {
-    return await Authing.getUserByUsername(username);
+    const user = await Authing.getUserByUsername(username);
+    // console.log("user", user);
+    return user;
+  }
+
+  @Router.get("/users/id/:userId")
+  async getUserByUserId(userId?: string) {
+    const _id = new ObjectId(userId);
+    const user = await Authing.getUserById(_id);
+    return user;
   }
 
   @Router.post("/users")
@@ -104,14 +114,22 @@ class Routes {
 
   @Router.post("/logout")
   async logOut(session: SessionDoc, req: any, res: any) {
+    Sessioning.end(session);
     req.session.destroy((err: any) => {
       if (err) {
         return res.status(500).json({ msg: "Error logging out." });
       }
-      res.clearCookie("connect.sid"); // Replace 'connect.sid' with your session cookie name if different
-      return res.json({ msg: "Logged out successfully." });
+      res.clearCookie("connect.sid");
     });
-    Sessioning.end(session);
+  }
+
+  @Router.get("/songs/recent")
+  async getRecentSong(session: SessionDoc) {
+    const userId = Sessioning.getUser(session);
+    const _userId = new ObjectId(userId);
+    const recentSong = await Posting.getMostRecentSong(_userId);
+
+    return { msg: "recentSongId", recentSong: recentSong };
   }
 
   @Router.get("/songs/:username?")
@@ -126,26 +144,33 @@ class Routes {
     return Responses.songs(posts);
   }
 
-  @Router.post("/songs")
-  async createSong(session: SessionDoc) {
-    console.log("trying to get currently listening song...")
-    const userId = Sessioning.getUser(session);
-    const refreshToken = (await Authing.getUserById(userId)).refreshToken;
-    await Authing.updateSpotifyAccessToken(userId, refreshToken);
-    const updatedAccessToken = (await Authing.getUserById(userId)).accessToken;
-    console.log("UPDATED ACCESS TOKEN");
-    const created = await Posting.create(userId, updatedAccessToken);
-    return { msg: created.msg, song: await Responses.song(created.song) };
+  @Router.get("/songs/id/:songId?")
+  async getSongInfo(songId: string) {
+    // console.log("Received songId:", songId);
+    const _songId = new ObjectId(songId);
+    const songinfo = await Posting.getSongById(_songId);
+    // console.log("songinfo", songinfo);
+    return songinfo;
   }
 
-  //commented out because songs stay the same.
-  // @Router.patch("/posts/:id")
-  // async updatePost(session: SessionDoc, id: string, content?: string, options?: PostOptions) {
-  //   const user = Sessioning.getUser(session);
-  //   const oid = new ObjectId(id);
-  //   await Posting.assertAuthorIsUser(oid, user);
-  //   return await Posting.update(oid, content, options);
-  // }
+  @Router.post("/songs")
+  async createSong(session: SessionDoc) {
+    const userId = Sessioning.getUser(session);
+    await Authing.updateSpotifyAccessToken(userId);
+    const updatedAccessToken = (await Authing.getUserById(userId)).accessToken;
+    // console.log("updatedAccessToken", updatedAccessToken);
+    const created = await Posting.create(userId, updatedAccessToken);
+    // console.log("trying to get currently listening song...");
+    return { msg: created.msg, song: created.song };
+  }
+
+  @Router.patch("/posts/:id")
+  async updatePost(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.update(oid);
+  }
 
   @Router.delete("/songs/:id?")
   async deleteSong(session: SessionDoc, _id?: string) {
@@ -174,8 +199,27 @@ class Routes {
   @Router.get("/friend/requests")
   async getRequests(session: SessionDoc) {
     const user = Sessioning.getUser(session);
-    return await Responses.friendRequests(await Friending.getRequests(user));
+    const requests = await Responses.friendRequests(await Friending.getRequests(user));
+    // console.log("currentuser's requests", requests);
+    return requests
   }
+
+  @Router.get("/friend/outgoing-requests")
+  async getOutgoingRequests(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    const requests = await Responses.friendRequests(await Friending.getOutgoingRequests(user));
+    // console.log("currentuser's outgoing requests", requests);
+    return requests
+  }
+
+  @Router.get("/friend/incoming-requests")
+  async getIncomingRequests(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    const requests = await Responses.friendRequests(await Friending.getIncomingRequests(user));
+    // console.log("currentuser's incoming requests", requests);
+    return requests
+  }
+
 
   @Router.post("/friend/requests/:to")
   async sendFriendRequest(session: SessionDoc, to: string) {
@@ -208,16 +252,20 @@ class Routes {
   @Router.get("/covers/notLocked/:username?")
   async getNotLockedCovers(username?: string) {
     const lockedCoverIds = await Locking.getContentIDsAfterCleanup();
+    // console.log("Locked Cover", lockedCoverIds);
 
     let covers;
     if (username) {
       const id = (await Authing.getUserByUsername(username))._id;
       covers = await Covering.getByAuthor(id);
+      // console.log("ALL covers", covers);
     } else {
       covers = await Covering.getComments();
     }
     covers = covers.filter((cover) => !lockedCoverIds.includes(cover._id.toString()));
-    return Responses.comments(covers);
+    // console.log("unlocked covers",covers);
+    // return Responses.comments(covers); //not working need to debug later
+    return covers;
   }
 
   @Router.get("/snapshots/all/:username?")
@@ -318,7 +366,8 @@ class Routes {
     } else {
       locks = await Locking.getLocks();
     }
-    return Responses.locks(locks);
+    // return Responses.locks(locks);
+    return locks;
   }
 
   @Router.post("/locks")
@@ -348,3 +397,4 @@ export const app = new Routes();
 
 /** The Express router. */
 export const appRouter = getExpressRouter(app);
+ 

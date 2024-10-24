@@ -12,7 +12,7 @@ const createPost = async (content: string) => {
     });
   } catch (_) {
     return;
-  }
+
   emit("refreshPosts");
   emptyForm();
 };

@@ -149,6 +149,12 @@ const operations: Operation[] = [
     fields: {},
   },
   {
+    name: "Accept Friend Request",
+    endpoint: "/api/friend/accept/:from",
+    method: "PUT",
+    fields: {from: "input"},
+  },
+  {
     name: "Send Friend Request",
     endpoint: "/api/friend/requests/:to_username",
     method: "POST",

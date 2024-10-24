@@ -19,5 +19,6 @@ async function login() {
 button {
   display: flex;
   justify-content: center;
+  background-color: #80cfa9;
 }
 </style>

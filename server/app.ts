@@ -9,8 +9,8 @@ import LockingConcept from "./concepts/locking";
 // and synchronized together in `routes.ts`.
 export const Sessioning = new SessioningConcept();
 export const Authing = new AuthenticatingConcept("users");
-export const Posting = new PostingConcept("posts");
+export const Posting = new PostingConcept("songs");
 export const Friending = new FriendingConcept("friends");
 export const Covering = new CommentingConcept("covers"); // sync with locking only
 export const Snapshoting = new CommentingConcept("snapshots"); // have state `expired`
-export const Locking = new LockingConcept("locking");
+export const Locking = new LockingConcept("locks");

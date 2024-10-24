@@ -11,6 +11,7 @@ export interface UserDoc extends BaseDoc {
   refreshToken: string;
   displayName: string;
   profileUrl: string | null;
+  profileImage: string | null;
 }
 
 /**j
@@ -32,7 +33,7 @@ export default class AuthenticatingConcept {
   /**
    * Spotify Login
    */
-  async loginBySpotifyId(params: { spotifyId: string; accessToken: string; refreshToken: string; displayName: string; profileUrl: string | null }) {
+  async loginBySpotifyId(params: { spotifyId: string; accessToken: string; refreshToken: string; displayName: string; profileUrl: string | null , profileImage: string | undefined}) {
     console.log("logging user by spotify id");
     const spotifyId = params.spotifyId;
     if (!spotifyId) {
@@ -47,10 +48,11 @@ export default class AuthenticatingConcept {
         accessToken: params.accessToken,
         refreshToken: params.refreshToken,
         profileUrl: params.profileUrl,
+        profileImage: params.profileImage,
       });
       return await this.users.readOne({ _id });
     }
-    this.updateSpotifyAccessToken(user._id, params.refreshToken);
+    this.updateSpotifyAccessToken(user._id);
     return user;
   }
 
@@ -59,7 +61,8 @@ export default class AuthenticatingConcept {
     if (user === null) {
       throw new NotFoundError(`User not found!`);
     }
-    return this.redactPassword(user);
+    return this.redact
+    (user);
   }
 
   async findUserIdBySpotifyId(spotifyId: string) {
@@ -76,9 +79,10 @@ export default class AuthenticatingConcept {
     return { msg: "User created successfully!", user: await this.users.readOne({ _id }) };
   }
 
-  private redactPassword(user: UserDoc): Omit<UserDoc, "password"> {
+  private redact
+  (user: UserDoc): Omit<UserDoc, "password" | "accessToken" | "refreshToken"> {
     // eslint-disable-next-line
-    const { password, ...rest } = user;
+    const { password, accessToken, refreshToken, ...rest } = user;
     return rest;
   }
 
@@ -87,7 +91,7 @@ export default class AuthenticatingConcept {
     if (user === null) {
       throw new NotFoundError(`User not found!`);
     }
-    return this.redactPassword(user);
+    return user;
   }
 
   async getUserByUsername(username: string) {
@@ -95,7 +99,8 @@ export default class AuthenticatingConcept {
     if (user === null) {
       throw new NotFoundError(`User not found!`);
     }
-    return this.redactPassword(user);
+    return this.redact
+    (user);
   }
 
   async idsToUsernames(ids: ObjectId[]) {
@@ -109,7 +114,9 @@ export default class AuthenticatingConcept {
   async getUsers(username?: string) {
     // If username is undefined, return all users by applying empty filter
     const filter = username ? { username } : {};
-    const users = (await this.users.readMany(filter)).map(this.redactPassword);
+    const users = (await this.users.readMany(filter)).map(this.redact
+
+    );
     return users;
   }
 
@@ -127,10 +134,15 @@ export default class AuthenticatingConcept {
     return { msg: "Username updated successfully!" };
   }
 
-  async updateSpotifyAccessToken(_id: ObjectId, refreshToken: string) {
+  async updateSpotifyAccessToken(_id: ObjectId) {
       const clientId = process.env.SPOTIFY_CLIENT_ID; 
       const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;  
       const encodedCredentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');  
+      const user = await this.users.readOne({_id});
+      const refreshToken = user?.refreshToken;
+      if (!refreshToken) {
+        throw new Error('No refresh token found for the user');
+      }
 
       try {
           const response = await axios.post('https://accounts.spotify.com/api/token', new URLSearchParams({

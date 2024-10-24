@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import router from "@/router";
 import { useToastStore } from "@/stores/toast";
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
@@ -15,6 +16,9 @@ const { toast } = storeToRefs(useToastStore());
 onBeforeMount(async () => {
   try {
     await userStore.updateSession();
+    if (!isLoggedIn.value) {
+      await router.push({ name: "Login" });
+    }
   } catch {
     // User is not logged in
   }
@@ -22,52 +26,67 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <header>
-    <nav>
-      <div class="title">
-        <img src="@/assets/images/logo.svg" />
-        <RouterLink :to="{ name: 'Home' }">
-          <h1>Memorify</h1>
-        </RouterLink>
-      </div>
-      <ul>
-        <li>
-          <RouterLink :to="{ name: 'Home' }" :class="{ underline: currentRouteName == 'Home' }"> Home </RouterLink>
-        </li>
-        <li v-if="isLoggedIn">
-          <RouterLink :to="{ name: 'Settings' }" :class="{ underline: currentRouteName == 'Settings' }"> Settings </RouterLink>
-        </li>
-        <li v-else>
-          <RouterLink :to="{ name: 'Login' }" :class="{ underline: currentRouteName == 'Login' }"> Login </RouterLink>
-        </li>
-      </ul>
-    </nav>
-    <article v-if="toast !== null" class="toast" :class="toast.style">
-      <p>{{ toast.message }}</p>
-    </article>
-  </header>
-  <RouterView />
+  <div class="app-container">
+    <header>
+      <nav>
+        <div class="title">
+          <!-- <img src="@/assets/images/logo.svg" /> -->
+          <RouterLink :to="{ name: 'Home' }">
+            <h1>Memorify</h1>
+          </RouterLink>
+        </div>
+        <ul>
+          <li>
+            <RouterLink :to="{ name: 'Home' }" :class="{ underline: currentRouteName == 'Home' }"> Home </RouterLink>
+          </li>
+          <li>
+            <RouterLink :to="{ name: 'Explore' }" :class="{ underline: currentRouteName == 'Explore' }"> Explore </RouterLink>
+          </li>
+          <li>
+            <RouterLink :to="{ name: 'Snapshots' }" :class="{ underline: currentRouteName == 'Snapshots' }"> Snapshots </RouterLink>
+          </li>
+          <li v-if="isLoggedIn">
+            <RouterLink :to="{ name: 'Profile' }" :class="{ underline: currentRouteName == 'Profile' }"> Profile </RouterLink>
+          </li>
+          <li v-else>
+            <RouterLink :to="{ name: 'Login' }" :class="{ underline: currentRouteName == 'Login' }"> Login </RouterLink>
+          </li>
+        </ul>
+      </nav>
+      <article v-if="toast !== null" class="toast" :class="toast.style">
+        <p>{{ toast.message }}</p>
+      </article>
+    </header>
+    <RouterView />
+  </div>
 </template>
 
 <style scoped>
 @import "./assets/toast.css";
 
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
 nav {
   padding: 1em 2em;
-  background-color: lightgray;
+  background-color: #80cfa9;
   display: flex;
   align-items: center;
 }
 
 h1 {
-  font-size: 2em;
+  font-size: 1.5em;
+  color: white;
   margin: 0;
 }
 
 .title {
   display: flex;
   align-items: center;
-  gap: 0.5em;
+  gap: 0.3em;
 }
 
 img {
@@ -76,7 +95,7 @@ img {
 
 a {
   font-size: large;
-  color: black;
+  color: white;
   text-decoration: none;
 }
 
@@ -89,7 +108,7 @@ ul {
   gap: 1em;
 }
 
-.underline {
+/* .underline {
   text-decoration: underline;
-}
+} */
 </style>

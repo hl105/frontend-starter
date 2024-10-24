@@ -21,8 +21,10 @@ app.use(logger("dev"));
 
 app.use(cors()); // https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
 
-app.use(express.json()); // Enable parsing JSON in requests and responses.
-app.use(express.urlencoded({ extended: false })); // Also enable URL encoded request and responses.
+// app.use(express.json()); // Enable parsing JSON in requests and responses.
+// app.use(express.urlencoded({ extended: false })); // Also enable URL encoded request and responses.
+app.use(express.json({ limit: '100mb' })); 
+app.use(express.urlencoded({ limit: '100mb', extended: true })); 
 
 // Session allows us to store a cookie 🍪.
 app.use(

@@ -14,6 +14,7 @@ export interface SongDoc extends BaseDoc {
   artist: string;
   name: string;
   album: string;
+  album_cover: string;
   url: string;
   lyrics: string;
 }
@@ -42,11 +43,13 @@ export default class PostingConcept {
 
       if (spotifyResponse.status === 200 && spotifyResponse.data) {
         const track = spotifyResponse.data.item;
+        const albumCover = track.album.images.length > 0 ? track.album.images[0].url : null;
         currentlyPlayingSong = {
           track_id: track.id,
           artist: track.artists.map((artist: SpotifyArtist) => artist.name).join(", "),
           name: track.name,
           album: track.album.name,
+          album_cover: albumCover,
           url: track.external_urls.spotify,
           lyrics: "", // will have to use external api, empty for now
         };
@@ -54,12 +57,12 @@ export default class PostingConcept {
         throw new Error("No song currently playing or response failed");
       }
     } catch (error) {
-      console.error("Error fetching currently playing song:", error);
       throw new Error("Error fetching currently playing song.");
     }
     const existingSong = await this.songs.readOne({ track_id: currentlyPlayingSong.track_id });
 
     if (existingSong) {
+      this.update(existingSong._id) //update dateUpdated
       return { msg: "Song already exists in the database", song: existingSong };
     }
 
@@ -84,13 +87,21 @@ export default class PostingConcept {
     return await this.songs.readOne({ trackId });
   }
 
-  //commented out because songs stay the same.
-  // async update(_id: ObjectId, content?: string) {
-  //   // Note that if content or options is undefined, those fields will *not* be updated
-  //   // since undefined values for partialUpdateOne are ignored.
-  //   await this.posts.partialUpdateOne({ _id }, { content});
-  //   return { msg: "Post successfully updated!" };
-  // }
+  async getMostRecentSong(userId: ObjectId){
+    const recentSong = await this.songs.collection.findOne({ author: userId }, {sort: { dateUpdated: -1 }});
+    // console.log("recent song",recentSong);
+    if (recentSong){
+      return recentSong;
+    }
+    else{
+      return null;
+    }
+  }
+
+  async update(_id: ObjectId) {
+    await this.songs.partialUpdateOne({ _id }, {}); // need to test
+    return { msg: "Song successfully updated!" };
+  }
 
   async delete(_id: ObjectId) {
     await this.songs.deleteOne({ _id });

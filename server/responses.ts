@@ -24,6 +24,7 @@ export default class Responses {
 
   /**
    * Same as {@link song} but for an array of SongDoc for improved performance.
+   * TODO: need to fix this
    */
   static async songs(songs: SongDoc[]) {
     const authors = await Authing.idsToUsernames(songs.map((song) => song.author));
