@@ -37,6 +37,8 @@ async function delete_() {
 <style scoped>
 .header {
   display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
   gap: 3em;
   align-items: center;
   padding-left: 4em;
@@ -51,6 +53,7 @@ async function delete_() {
 
 h1 {
   font-size: 4em;
+  flex: 1 1 auto;
 }
 
 .profile-image {
