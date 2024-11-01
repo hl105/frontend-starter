@@ -63,6 +63,7 @@ export default class PostingConcept {
 
     if (existingSong) {
       this.update(existingSong._id) //update dateUpdated
+      // console.log("Song updated", existingSong);
       return { msg: "Song already exists in the database", song: existingSong };
     }
 
