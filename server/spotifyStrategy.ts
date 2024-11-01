@@ -26,14 +26,14 @@ passport.use(
       showDialog: true,
       clientID: clientID,
       clientSecret: clientSecret,
-      // callbackURL: "https://memorify-omega.vercel.app/api/spotify/callback",
-      callbackURL: "http://localhost:3000/api/spotify/callback/",
+      callbackURL: "https://memorify-omega.vercel.app/api/spotify/callback",
+      // callbackURL: "http://localhost:3000/api/spotify/callback/",
       scope: ["user-read-private", "user-read-currently-playing", "user-read-playback-state", "user-modify-playback-state"],
     },
     async (accessToken: string, refreshToken: string, expires_in: number, profile: Profile, done: Function) => {
-      console.log("Spotify Strategy is in use");
-      console.log("Access Token:", accessToken);
-      console.log("Profile:", profile);
+      // console.log("Spotify Strategy is in use");
+      // console.log("Access Token:", accessToken);
+      // console.log("Profile:", profile);
       
       try {
         const user = await Authing.loginBySpotifyId({ spotifyId: profile.id, accessToken: accessToken, refreshToken: refreshToken, displayName: profile.displayName, profileUrl: profile.profileUrl, profileImage: profile.photos?.[0].valueOf()});
