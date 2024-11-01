@@ -42,7 +42,8 @@ export default class FriendingConcept {
 
   async getIncomingRequests(user: ObjectId) {
     return await this.requests.readMany({
-      $or: [{ to: user }],
+      to: user,
+      status: "pending",
     });
   }
 
