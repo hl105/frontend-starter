@@ -120,6 +120,7 @@ class Routes {
         return res.status(500).json({ msg: "Error logging out." });
       }
       res.clearCookie("connect.sid");
+      return;
     });
   }
 
