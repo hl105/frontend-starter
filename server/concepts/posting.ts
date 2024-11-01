@@ -59,10 +59,10 @@ export default class PostingConcept {
     } catch (error) {
       throw new Error("Error fetching currently playing song.");
     }
-    const existingSong = await this.songs.readOne({ track_id: currentlyPlayingSong.track_id });
+    const existingSong = await this.songs.readOne({ track_id: currentlyPlayingSong.track_id, author: author });
 
     if (existingSong) {
-      this.update(existingSong._id) //update dateUpdated
+      this.update(existingSong._id); //update dateUpdated
       // console.log("Song updated", existingSong);
       return { msg: "Song already exists in the database", song: existingSong };
     }
@@ -88,13 +88,15 @@ export default class PostingConcept {
     return await this.songs.readOne({ trackId });
   }
 
-  async getMostRecentSong(userId: ObjectId){
+  async getMostRecentSong(userId: ObjectId) {
+    const allsongs = await this.songs.collection.findOne({ author: userId }, {sort: { dateUpdated: -1 }});
+    // console.log(allsongs); 
     const recentSong = await this.songs.collection.findOne({ author: userId }, {sort: { dateUpdated: -1 }});
-    // console.log("recent song",recentSong);
-    if (recentSong){
+    // const recentSong = await this.songs.collection.find({ author: userId }).sort({ dateUpdated: -1 }).limit(1);
+    // console.log("recent song", recentSong);
+    if (recentSong) {
       return recentSong;
-    }
-    else{
+    } else {
       return null;
     }
   }
